@@ -48,8 +48,7 @@ From a developer’s perspective, the project will involve building a server-sid
 | 24  | API for third-party access   | Expose task data through an API                | Server           |
 | 25  | Integration with calendars   | Integrate tasks with Google Calendar, etc.     | Both             |
 
-### Long Description of Features (if needed):
-Add more detailed explanations for any features that require additional clarification here.
+
 
 ## 4. Implementation
 
