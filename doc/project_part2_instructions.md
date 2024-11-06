@@ -42,7 +42,7 @@ Credit will be equally divided among 9 features, portioned as follows:
 
 To exercise each HTTP request, there should a minimum of two unit tests per request: one test to exercise the correct use of the HTTP call and response, and one unit test to test an error condition.  
 
-* 12 x 9 = 108 points total
+* 12 x 8 = 96 points total
 
 
 
