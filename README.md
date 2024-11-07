@@ -109,7 +109,7 @@ To run the unit tests:
 2. Run the tests using npm:
 
     ```bash
-    npm test
+    npx jest test.js
 
 ### Note you need to be in the tests folder to run the test by using npm test
 
