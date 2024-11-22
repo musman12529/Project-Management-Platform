@@ -19,18 +19,16 @@ The README should also contain the following information:
 * Indication of the API calls and unit tests associated with each feature should be updated from part II submission.
 
 Push the project submission elements (except for the video) to the project repo before the deadline. 
-
-~~Evaluation scheme for this submission will be available separately.~~
  
-## Evaluation (added Mar 28)
+## Evaluation
 
 Only aspects of the submission the marker can reasonably understand from your README and video demo will be credited.
 
 DO NOT include the video in the repo, as it will be too large. Include a link or reference to the video file so the marker can view it.
 
-Credit will be equally divided among 9 features, portioned as follows:
+Credit will be equally divided among 8 features, portioned as follows:
 
-For each of 9 features:
+For each of 8 features:
 
 * 2 points: sufficient client side HTML code and structure for feature operation  (HTML, css, js)
 * 2 points: sufficient server-side code to support feature
