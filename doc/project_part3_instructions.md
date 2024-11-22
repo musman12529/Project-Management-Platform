@@ -37,6 +37,6 @@ For each of 8 features:
 * 2 points: unit tests correctly demonstrate updated HTTP/API services (those finally used to support feature) are working
 * 6 points: video demo and running code demonstrate working code as operated from client-side interface
 
-NOTE there is no weight for web page layout or aesthetics, as we did not cover those matters in class session. 
+NOTE there is no weight for web page layout or aesthetics, as we did not cover those matters in class session. However the basic appearance of a kanban board is expected to be implemented.
 
 * 16 x 8 = 128 points total
