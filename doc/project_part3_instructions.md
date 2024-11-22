@@ -1,6 +1,4 @@
-# Project  Part II (due Nov 7, 2024)
-
-# Part III (due Apr 5, 2024)
+# Project  Part III (due Dec 2, 2024)
 
 Complete your project by finishing any work remaining from part II and implementing a client/browser side for the application.
 
