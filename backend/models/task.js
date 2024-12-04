@@ -4,20 +4,23 @@ const taskSchema = new mongoose.Schema({
   title: { type: String, required: true },
   description: { type: String },
   dueDate: { type: Date }, // New field for due date
-
+  priority: { 
+    type: String, 
+    enum: ['High', 'Medium', 'Low'], 
+    default: 'Low' 
+  }, // New field for priority
   status: { type: String, enum: ['pending', 'in-progress', 'completed'], default: 'pending' },
   createdAt: { type: Date, default: Date.now },
-  
   updatedAt: { type: Date, default: Date.now },
-  
   history: [{
-    title: { type: String },  // Add title to history
-    description: { type: String },  // Add description to history
-    dueDate: { type: Date }, // Add due date to history
-
+    title: { type: String }, 
+    description: { type: String }, 
+    dueDate: { type: Date },
+    priority: { type: String, enum: ['High', 'Medium', 'Low'] }, // Save priority in history
     status: { type: String, enum: ['pending', 'in-progress', 'completed'], default: 'pending' },
     updatedAt: { type: Date, default: Date.now }
-  }]
+  }],
+  userEmail: { type: String, required: true }
 });
 
 const Task = mongoose.model('Task', taskSchema);

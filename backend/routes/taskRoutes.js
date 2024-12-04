@@ -5,12 +5,15 @@ const router = express.Router();
 
 
 // Retrieve all overdue tasks (this should come before the :id route)
+// Retrieve all overdue tasks for a specific user
 router.get('/overdue', async (req, res) => {
   try {
-    const now = new Date(); // Get the current date and time
+    const userEmail = req.headers['user-email'];
+    if (!userEmail) return res.status(400).json({ message: 'User email is required' });
 
-    // Find tasks with a dueDate in the past and that are not marked as completed
+    const now = new Date();
     const overdueTasks = await Task.find({
+      userEmail,
       dueDate: { $lt: now },
       status: { $ne: 'completed' }
     });
@@ -23,16 +26,29 @@ router.get('/overdue', async (req, res) => {
 
 // Create a new task
 router.post('/', async (req, res) => {
-  const { title, description, dueDate } = req.body; // Include dueDate
-  const task = new Task({ title, description, dueDate }); // Save dueDate
-  
+  const { title, description, dueDate, priority } = req.body; // Include priority
+  const userEmail = req.headers['user-email']; // Get user email from the request headers
+
+  if (!userEmail) {
+    return res.status(400).json({ message: 'User email is required to create a task' });
+  }
+
+  const task = new Task({
+    title,
+    description,
+    dueDate,
+    priority, // Add priority to the task
+    userEmail
+  });
+
   try {
     await task.save();
-    res.status(201).json(task);
+    res.status(201).json(task); // Return the newly created task
   } catch (err) {
     res.status(400).json({ message: err.message });
   }
 });
+
 
 // Get a specific task by ID
 router.get('/:id', async (req, res) => {
@@ -46,28 +62,26 @@ router.get('/:id', async (req, res) => {
 });
 
 // Update a task
-// Update a task
 router.put('/:id', async (req, res) => {
   try {
     const task = await Task.findById(req.params.id);
     if (!task) return res.status(404).json({ message: 'Task not found' });
 
-    // Push current title and description to history before updating
+    // Push current title, description, and priority to history before updating
     task.history.push({
       title: task.title,
       description: task.description,
       dueDate: task.dueDate, // Save current dueDate
-
+      priority: task.priority, // Save current priority
       status: task.status,
       updatedAt: task.updatedAt
     });
 
     // Update task with new values
-
     task.title = req.body.title || task.title;
     task.description = req.body.description || task.description;
-    task.dueDate = req.body.dueDate || task.dueDate; // Update dueDate
-
+    task.dueDate = req.body.dueDate || task.dueDate;
+    task.priority = req.body.priority || task.priority; // Update priority
     task.status = req.body.status || task.status;
     task.updatedAt = Date.now();
 
@@ -79,7 +93,7 @@ router.put('/:id', async (req, res) => {
 });
 
 
-// Retrieve task history at a specified time
+// Retrieve task history at  aspecified time
 router.get('/history/:id', async (req, res) => {
   try {
     const task = await Task.findById(req.params.id);
@@ -94,7 +108,10 @@ router.get('/history/:id', async (req, res) => {
 // Retrieve all tasks
 router.get('/', async (req, res) => {
   try {
-    const tasks = await Task.find();
+    const userEmail = req.headers['user-email']; // Assuming you're sending the email in the headers (you can also send via body or query)
+    if (!userEmail) return res.status(400).json({ message: 'User email is required' });
+
+    const tasks = await Task.find({ userEmail }); // Fetch tasks associated with the user's email
     res.json(tasks);
   } catch (err) {
     res.status(500).json({ message: err.message });

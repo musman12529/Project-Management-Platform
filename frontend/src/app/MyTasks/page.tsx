@@ -1,0 +1,701 @@
+"use client";
+
+import { useEffect, useState } from "react";
+import { useSession } from "next-auth/react";
+
+// TaskCard Component
+const TaskCard = ({ task, onEditClick }) => {
+  const [isDropdownOpen, setIsDropdownOpen] = useState(false);
+
+  const handleDropdownToggle = () => {
+    setIsDropdownOpen(!isDropdownOpen);
+  };
+
+  const handleEditClick = () => {
+    onEditClick(task);
+    setIsDropdownOpen(false); // Close dropdown when Edit is clicked
+  };
+
+  return (
+    <div className="bg-white border border-gray-300 rounded-lg p-3 shadow-md hover:shadow-lg transition relative">
+      <div className="absolute top-2 right-2 cursor-pointer">
+        <button
+          className="text-gray-500 hover:text-gray-700"
+          onClick={handleDropdownToggle}
+        >
+          ...
+        </button>
+
+        {/* Dropdown Menu */}
+        {isDropdownOpen && (
+          <div className="absolute right-0 mt-2 bg-white border border-gray-300 shadow-md rounded-lg w-32">
+            <ul className="text-sm">
+              <li
+                className="p-2 cursor-pointer hover:bg-gray-100"
+                onClick={handleEditClick}
+              >
+                Edit
+              </li>
+            </ul>
+          </div>
+        )}
+      </div>
+
+      <p
+        className={`text-sm font-semibold ${
+          task.priority === "High"
+            ? "text-red-500"
+            : task.priority === "Medium"
+            ? "text-yellow-500"
+            : task.priority === "Low"
+            ? "text-green-500"
+            : ""
+        }`}
+      >
+        {task.priority.toUpperCase()} PRIORITY
+      </p>
+      <h3 className="font-bold text-xl">{task.title}</h3>
+      <p className="text-sm text-gray-500 mb-2">
+        <strong>Due:</strong> {new Date(task.dueDate).toLocaleDateString()}
+      </p>
+      <p className="text-sm text-gray-600">
+        <strong>Description:</strong> {task.description}
+      </p>
+      <div className="flex space-x-2 mt-4">
+        {Array.isArray(task.assignedTo) &&
+          task.assignedTo.map((initials, index) => (
+            <div
+              key={index}
+              className="bg-blue-500 text-white rounded-full w-10 h-10 flex items-center justify-center text-sm"
+            >
+              {initials}
+            </div>
+          ))}
+      </div>
+    </div>
+  );
+};
+
+
+// TaskColumn Component
+const TaskColumn = ({ title, color, tasks, onEditClick }) => {
+  return (
+    <div className="flex flex-col">
+      <div className="flex items-center bg-gray-100 border border-gray-300 rounded-lg px-4 py-2 mb-4">
+        <span
+          className={`w-3 h-3 rounded-full mr-2 ${
+            color === "blue"
+              ? "bg-blue-500"
+              : color === "yellow"
+              ? "bg-yellow-500"
+              : color === "green"
+              ? "bg-green-500"
+              : "bg-gray-500"
+          }`}
+        ></span>
+        <h2 className="text-lg font-bold">{title}</h2>
+      </div>
+      <div className="bg-gray-100 p-4 rounded-lg shadow-sm flex-1">
+        <div className="flex flex-col items-stretch space-y-6">
+          {tasks.length > 0 ? (
+            tasks.map((task) => (
+              <TaskCard key={task.id} task={task} onEditClick={onEditClick} />
+            ))
+          ) : (
+            <p className="text-gray-500 italic">No tasks in this column.</p>
+          )}
+        </div>
+      </div>
+    </div>
+  );
+};
+
+// Main TasksPage Component
+const TasksPage = () => {
+  const { data: session, status } = useSession();
+  const [tasks, setTasks] = useState([]);
+  const [view, setView] = useState("Board");
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [isEditing, setIsEditing] = useState(false); // Track if we're editing a task
+  const [selectedTask, setSelectedTask] = useState(null); // Store the task being edited
+  const [newTask, setNewTask] = useState({
+    title: "",
+    description: "",
+    dueDate: "",
+    priority: "Medium",
+    assignedTo: [],
+  });
+
+  useEffect(() => {
+    const fetchTasks = async () => {
+      try {
+        const userEmail = localStorage.getItem("email");
+        const response = await fetch("/api/tasks", {
+          method: "GET",
+          headers: {
+            "user-email": userEmail,
+            "Content-Type": "application/json",
+          },
+        });
+
+        if (!response.ok) {
+          throw new Error("Failed to fetch tasks");
+        }
+
+        const data = await response.json();
+        setTasks(data);
+      } catch (error) {
+        console.error(error);
+      }
+    };
+
+    fetchTasks();
+  }, []);
+
+  const handleAddTask = async () => {
+    try {
+      const userEmail = localStorage.getItem("email");
+      const response = await fetch("/api/createTask", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "user-email": userEmail,
+        },
+        body: JSON.stringify(newTask),
+      });
+
+      if (!response.ok) {
+        throw new Error("Failed to add task");
+      }
+
+      const data = await response.json();
+      setTasks((prevTasks) => [...prevTasks, data]);
+      setIsModalOpen(false);
+      setNewTask({
+        title: "",
+        description: "",
+        dueDate: "",
+        priority: "Medium",
+        assignedTo: [],
+      });
+    } catch (error) {
+      console.error(error);
+    }
+  };
+
+  const handleEditTask = async () => {
+    try {
+      
+      const _id = selectedTask._id;
+      const response = await fetch("/api/updateTask/", {
+        method: "PUT",
+        headers: {
+          "Content-Type": "application/json",
+          "id": _id,
+
+        },
+        body: JSON.stringify(selectedTask),
+      });
+
+      if (!response.ok) {
+        throw new Error("Failed to edit task");
+      }
+
+      const data = await response.json();
+      setTasks((prevTasks) =>
+        prevTasks.map((task) =>
+          task._id === data._id ? { ...task, ...data } : task  // Compare with _id
+        )
+      );
+      setIsEditing(false); // Close the edit modal
+      setSelectedTask(null); // Clear selected task
+    } catch (error) {
+      console.error(error);
+    }
+  };
+
+  const handleEditClick = (task) => {
+    console.log('Selected task ID:', task._id); // Access the task ID here
+    setSelectedTask(task);
+    setIsEditing(true);
+  };
+
+  const pendingTasks = Array.isArray(tasks)
+    ? tasks.filter((task) => task.status === "pending")
+    : [];
+  const inProgressTasks = Array.isArray(tasks)
+    ? tasks.filter((task) => task.status === "in-progress")
+    : [];
+  const completedTasks = Array.isArray(tasks)
+    ? tasks.filter((task) => task.status === "completed")
+    : [];
+
+  if (status === "loading") return <p>Loading...</p>;
+  if (status === "unauthenticated") return <p>You are not logged in.</p>;
+
+  return (
+    <div className="p-8">
+      <div className="flex justify-between items-center mb-6">
+        <div>
+          <button
+            className={`mr-4 ${view === "Board" ? "font-bold text-blue-500" : "text-gray-500"}`}
+            onClick={() => setView("Board")}
+          >
+            Board View
+          </button>
+          <button
+            className={view === "List" ? "font-bold text-blue-500" : "text-gray-500"}
+            onClick={() => setView("List")}
+          >
+            List View
+          </button>
+        </div>
+        <button
+          className="bg-blue-500 text-white py-2 px-4 rounded-lg"
+          onClick={() => setIsModalOpen(true)}
+        >
+          + Create Task
+        </button>
+      </div>
+
+      {view === "Board" ? (
+        <div className="grid gap-6 md:grid-cols-3">
+          <TaskColumn title="Pending" color="blue" tasks={pendingTasks} onEditClick={handleEditClick} />
+          <TaskColumn title="In-Progress" color="yellow" tasks={inProgressTasks} onEditClick={handleEditClick} />
+          <TaskColumn title="Completed" color="green" tasks={completedTasks} onEditClick={handleEditClick} />
+        </div>
+      ) : (
+        <div>
+          {/* List View Logic */}
+          <p>List view is under construction.</p>
+        </div>
+      )}
+      {/* Modal for Adding Task */}
+       {isModalOpen && (
+        <div className="fixed inset-0 bg-gray-600 bg-opacity-50 flex justify-center items-center">
+          <div className="bg-white p-6 rounded-lg shadow-lg max-w-md w-full">
+            <h3 className="text-xl font-semibold mb-4">Add New Task</h3>
+            <input
+              type="text"
+              className="w-full p-2 border border-gray-300 rounded mb-4"
+              placeholder="Task Title"
+              value={newTask.title}
+              onChange={(e) => setNewTask({ ...newTask, title: e.target.value })}
+            />
+            <input
+              type="text"
+              className="w-full p-2 border border-gray-300 rounded mb-4"
+              placeholder="Task Description"
+              value={newTask.description}
+              onChange={(e) =>
+                setNewTask({ ...newTask, description: e.target.value })
+              }
+            />
+            <input
+              type="date"
+              className="w-full p-2 border border-gray-300 rounded mb-4"
+              value={newTask.dueDate}
+              onChange={(e) => setNewTask({ ...newTask, dueDate: e.target.value })}
+            />
+            <select
+              className="w-full p-2 border border-gray-300 rounded mb-4"
+              value={newTask.priority}
+              onChange={(e) => setNewTask({ ...newTask, priority: e.target.value })}
+            >
+              <option value="High">High</option>
+              <option value="Medium">Medium</option>
+              <option value="Low">Low</option>
+            </select>
+            <button
+              className="bg-blue-500 text-white py-2 px-4 rounded-lg"
+              onClick={handleAddTask}
+            >
+              Add Task
+            </button>
+            <button
+              className="bg-gray-500 text-white py-2 px-4 rounded-lg mt-4"
+              onClick={() => setIsModalOpen(false)}
+            >
+              Cancel
+            </button>
+          </div>
+        </div>
+      )}
+
+      {/* Modal for Editing Task */}
+      {isEditing && selectedTask && (
+        <div className="fixed inset-0 bg-gray-600 bg-opacity-50 flex justify-center items-center">
+          <div className="bg-white p-6 rounded-lg shadow-lg max-w-md w-full">
+            <h3 className="text-xl font-semibold mb-4">Edit Task</h3>
+            <input
+              type="text"
+              className="w-full p-2 border border-gray-300 rounded mb-4"
+              placeholder="Task Title"
+              value={selectedTask.title}
+              onChange={(e) =>
+                setSelectedTask({ ...selectedTask, title: e.target.value })
+              }
+            />
+            <textarea
+              className="w-full p-2 border border-gray-300 rounded mb-4"
+              placeholder="Description"
+              value={selectedTask.description}
+              onChange={(e) =>
+                setSelectedTask({ ...selectedTask, description: e.target.value })
+              }
+            />
+            <input
+              type="date"
+              className="w-full p-2 border border-gray-300 rounded mb-4"
+              value={selectedTask.dueDate}
+              onChange={(e) =>
+                setSelectedTask({ ...selectedTask, dueDate: e.target.value })
+              }
+            />
+            <div className="flex space-x-4 mb-4">
+              <select
+                value={selectedTask.priority}
+                onChange={(e) =>
+                  setSelectedTask({ ...selectedTask, priority: e.target.value })
+                }
+                className="w-full p-2 border border-gray-300 rounded"
+              >
+                <option value="Low">Low</option>
+                <option value="Medium">Medium</option>
+                <option value="High">High</option>
+              </select>
+              <select
+                value={selectedTask.status}
+                onChange={(e) =>
+                  setSelectedTask({ ...selectedTask, status: e.target.value })
+                }
+                className="w-full p-2 border border-gray-300 rounded"
+              >
+                <option value="pending">Pending</option>
+                <option value="in-progress">In-Progress</option>
+                <option value="completed">Completed</option>
+              </select>
+            </div>
+            <button
+              onClick={handleEditTask}
+              className="bg-blue-500 text-white py-2 px-4 rounded"
+            >
+              Save Changes
+            </button>
+            <button
+              onClick={() => setIsEditing(false)}
+              className="bg-gray-500 text-white py-2 px-4 rounded ml-2"
+            >
+              Cancel
+            </button>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+};
+
+export default TasksPage;
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+// "use client";
+
+// import { useEffect, useState } from "react";
+// import { useSession } from "next-auth/react";
+
+// // TaskCard Component
+// const TaskCard = ({ task }) => {
+//   return (
+//     <div className="bg-white border border-gray-300 rounded-lg p-3 shadow-md hover:shadow-lg transition">
+//       <p
+//         className={`text-sm font-semibold ${
+//           task.priority === "High"
+//             ? "text-red-500"
+//             : task.priority === "Medium"
+//             ? "text-yellow-500"
+//             : task.priority === "Low"
+//             ? "text-green-500"
+//             : ""
+//         }`}
+//       >
+//         {task.priority.toUpperCase()} PRIORITY
+//       </p>
+//       <h3 className=" font-bold text-xl">{task.title}</h3>
+//       <p className="text-sm text-gray-500 mb-2">
+//         <strong>Due:</strong> {new Date(task.dueDate).toLocaleDateString()}
+//       </p>
+//       <p className="text-sm text-gray-600">
+//         <strong>Description:</strong> {task.description}
+//       </p>
+//       <div className="flex space-x-2 mt-4">
+//         {/* Check if 'assignedTo' is an array before calling .map */}
+//         {Array.isArray(task.assignedTo) && task.assignedTo.map((initials, index) => (
+//           <div
+//             key={index}
+//             className="bg-blue-500 text-white rounded-full w-10 h-10 flex items-center justify-center text-sm"
+//           >
+//             {initials}
+//           </div>
+//         ))}
+//       </div>
+//     </div>
+//   );
+// };
+// // TaskColumn Component
+// const TaskColumn = ({ title, color, tasks }) => {
+//   return (
+//     <div className="flex flex-col ">
+//       <div className="flex items-center bg-gray-100 border border-gray-300 rounded-lg px-4 py-2 mb-4 ">
+//         <span
+//           className={`w-3 h-3 rounded-full mr-2 ${
+//             color === "blue"
+//               ? "bg-blue-500"
+//               : color === "yellow"
+//               ? "bg-yellow-500"
+//               : color === "green"
+//               ? "bg-green-500"
+//               : "bg-gray-500"
+//           }`}
+//         ></span>
+//         <h2 className="text-lg font-bold">{title}</h2>
+//       </div>
+//       <div className="bg-gray-100 p-4 rounded-lg shadow-sm flex-1">
+//         <div className="flex flex-col items-stretch space-y-6 ">
+//           {tasks.length > 0 ? (
+//             tasks.map((task) => (
+//               <TaskCard key={task.id} task={task} className="flex-1 h-full" />
+//             ))
+//           ) : (
+//             <p className="text-gray-500 italic">No tasks in this column.</p>
+//           )}
+//         </div>
+//       </div>
+//     </div>
+//   );
+// };
+
+// // Main TasksPage Component
+// const TasksPage = () => {
+//   const { data: session, status } = useSession();
+//   const [tasks, setTasks] = useState([]);
+//   const [view, setView] = useState("Board");
+//   const [isModalOpen, setIsModalOpen] = useState(false);
+//   const [newTask, setNewTask] = useState({
+//     title: "",
+//     description: "",
+//     dueDate: "",
+//     priority: "Medium",
+//     assignedTo: [], // Empty list initially
+//   });
+
+//   useEffect(() => {
+//     const fetchTasks = async () => {
+//       try {
+//         const userEmail = localStorage.getItem("email");
+//         const response = await fetch("/api/tasks", {
+//           method: "GET",
+//           headers: {
+//             "user-email": userEmail,
+//             "Content-Type": "application/json",
+//           },
+//         });
+
+//         if (!response.ok) {
+//           throw new Error("Failed to fetch tasks");
+//         }
+
+//         const data = await response.json();
+//         setTasks(data);
+        
+//       } catch (error) {
+//         console.error(error);
+//       }
+//     };
+
+//     fetchTasks();
+//   }, []);
+
+//   const handleAddTask = async () => {
+//     try {
+//       const userEmail = localStorage.getItem("email");
+//       const response = await fetch("/api/createTask", {
+//         method: "POST",
+//         headers: {
+//           "Content-Type": "application/json",
+//           "user-email": userEmail,
+//         },
+//         body: JSON.stringify(newTask),
+//       });
+
+//       if (!response.ok) {
+//         throw new Error("Failed to add task");
+//       }
+
+//       const data = await response.json();
+//       setTasks((prevTasks) => [...prevTasks, data]); // Add new task to state
+//       setIsModalOpen(false); // Close the modal after adding the task
+//       setNewTask({
+//         title: "",
+//         description: "",
+//         dueDate: "",
+//         priority: "Medium",
+//         assignedTo: [],
+//       }); // Clear the inputs after adding task
+//     } catch (error) {
+//       console.error(error);
+//     }
+//   };
+
+//   // Filter tasks by status
+//  // Ensure tasks is an array before filtering
+// const pendingTasks = Array.isArray(tasks) ? tasks.filter((task) => task.status === "pending") : [];
+// const inProgressTasks = Array.isArray(tasks) ? tasks.filter((task) => task.status === "in-progress") : [];
+// const completedTasks = Array.isArray(tasks) ? tasks.filter((task) => task.status === "completed") : [];
+
+//   if (status === "loading") return <p>Loading...</p>;
+//   if (status === "unauthenticated") return <p>You are not logged in.</p>;
+
+//   return (
+//     <div className="p-8">
+//       <div className="flex justify-between items-center mb-6">
+//         <div>
+//           <button
+//             className={`mr-4 ${view === "Board" ? "font-bold text-blue-500" : "text-gray-500"}`}
+//             onClick={() => setView("Board")}
+//           >
+//             Board View
+//           </button>
+//           <button
+//             className={view === "List" ? "font-bold text-blue-500" : "text-gray-500"}
+//             onClick={() => setView("List")}
+//           >
+//             List View
+//           </button>
+//         </div>
+//         <button
+//           className="bg-blue-500 text-white py-2 px-4 rounded-lg"
+//           onClick={() => setIsModalOpen(true)}
+//         >
+//           + Create Task
+//         </button>
+//       </div>
+
+//       {view === "Board" ? (
+//         <div className="grid gap-6 md:grid-cols-3">
+//           <TaskColumn title="Pending" color="blue" tasks={pendingTasks} />
+//           <TaskColumn title="In-Progress" color="yellow" tasks={inProgressTasks} />
+//           <TaskColumn title="Completed" color="green" tasks={completedTasks} />
+//         </div>
+//       ) : (
+//         <div>
+//           {/* List View Logic */}
+//           <p>List view is under construction.</p>
+//         </div>
+//       )}
+
+//       {/* Modal for Adding Task */}
+//       {isModalOpen && (
+//         <div className="fixed inset-0 bg-gray-600 bg-opacity-50 flex justify-center items-center">
+//           <div className="bg-white p-6 rounded-lg shadow-lg max-w-md w-full">
+//             <h3 className="text-xl font-semibold mb-4">Add New Task</h3>
+//             <input
+//               type="text"
+//               className="w-full p-2 border border-gray-300 rounded mb-4"
+//               placeholder="Task Title"
+//               value={newTask.title}
+//               onChange={(e) => setNewTask({ ...newTask, title: e.target.value })}
+//             />
+//             <input
+//               type="text"
+//               className="w-full p-2 border border-gray-300 rounded mb-4"
+//               placeholder="Task Description"
+//               value={newTask.description}
+//               onChange={(e) =>
+//                 setNewTask({ ...newTask, description: e.target.value })
+//               }
+//             />
+//             <input
+//               type="date"
+//               className="w-full p-2 border border-gray-300 rounded mb-4"
+//               value={newTask.dueDate}
+//               onChange={(e) => setNewTask({ ...newTask, dueDate: e.target.value })}
+//             />
+//             <select
+//               className="w-full p-2 border border-gray-300 rounded mb-4"
+//               value={newTask.priority}
+//               onChange={(e) => setNewTask({ ...newTask, priority: e.target.value })}
+//             >
+//               <option value="High">High</option>
+//               <option value="Medium">Medium</option>
+//               <option value="Low">Low</option>
+//             </select>
+//             <button
+//               className="bg-blue-500 text-white py-2 px-4 rounded-lg"
+//               onClick={handleAddTask}
+//             >
+//               Add Task
+//             </button>
+//             <button
+//               className="bg-gray-500 text-white py-2 px-4 rounded-lg mt-4"
+//               onClick={() => setIsModalOpen(false)}
+//             >
+//               Cancel
+//             </button>
+//           </div>
+//         </div>
+//       )}
+//     </div>
+//   );
+// };
+
+// export default TasksPage;
+
+
+
+
+
+
+
+
