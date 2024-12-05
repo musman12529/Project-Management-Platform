@@ -46,7 +46,7 @@ const SlidingMenu = () => {
       {/* Off-Canvas Menu */}
       <div
         id="cardContainer"
-        className="fixed top-0 right-0 h-full w-0 overflow-hidden bg-black bg-opacity-30 backdrop-blur-lg shadow-lg transition-all duration-300"
+        className="fixed top-0 right-0 h-full w-0 overflow-hidden bg-black bg-opacity-30 backdrop-blur-lg shadow-lg transition-all duration-300 z-10"
       >
         <button
           onClick={closeButton}

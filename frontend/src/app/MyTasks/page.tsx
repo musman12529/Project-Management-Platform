@@ -4,7 +4,7 @@ import { useEffect, useState } from "react";
 import { useSession } from "next-auth/react";
 
 // TaskCard Component
-const TaskCard = ({ task, onEditClick }) => {
+const TaskCard = ({ task, onEditClick, onDeleteClick, onHistoryClick, isList  }) => {
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
 
   const handleDropdownToggle = () => {
@@ -16,8 +16,17 @@ const TaskCard = ({ task, onEditClick }) => {
     setIsDropdownOpen(false); // Close dropdown when Edit is clicked
   };
 
+  const handleDeleteClick = () => {
+    onDeleteClick(task._id); // Call the delete function with task ID
+    setIsDropdownOpen(false); // Close dropdown
+  };
+  const handleHistoryClick = () => {
+    onHistoryClick(task._id); // Pass task ID to fetch history
+    setIsDropdownOpen(false); // Close dropdown
+  };
+
   return (
-    <div className="bg-white border border-gray-300 rounded-lg p-3 shadow-md hover:shadow-lg transition relative">
+    <div className="bg-white border border-gray-300 rounded-lg p-3 shadow-md hover:shadow-lg transition relative z-1">
       <div className="absolute top-2 right-2 cursor-pointer">
         <button
           className="text-gray-500 hover:text-gray-700"
@@ -35,6 +44,18 @@ const TaskCard = ({ task, onEditClick }) => {
                 onClick={handleEditClick}
               >
                 Edit
+              </li>
+              <li
+                className="p-2 cursor-pointer hover:bg-gray-100"
+                onClick={handleHistoryClick}
+              >
+                History
+              </li>
+              <li
+                className="p-2 cursor-pointer hover:bg-gray-100"
+                onClick={handleDeleteClick}
+              >
+                Delete
               </li>
             </ul>
           </div>
@@ -55,6 +76,11 @@ const TaskCard = ({ task, onEditClick }) => {
         {task.priority.toUpperCase()} PRIORITY
       </p>
       <h3 className="font-bold text-xl">{task.title}</h3>
+      {isList ? (
+        <p className="text-sm text-gray-500 mb-2">
+          <strong>Status:</strong> {task.status}
+        </p>
+        ) : null}
       <p className="text-sm text-gray-500 mb-2">
         <strong>Due:</strong> {new Date(task.dueDate).toLocaleDateString()}
       </p>
@@ -78,7 +104,7 @@ const TaskCard = ({ task, onEditClick }) => {
 
 
 // TaskColumn Component
-const TaskColumn = ({ title, color, tasks, onEditClick }) => {
+const TaskColumn = ({ title, color, tasks, onEditClick, onDeleteClick, onHistoryClick, isList }) => {
   return (
     <div className="flex flex-col">
       <div className="flex items-center bg-gray-100 border border-gray-300 rounded-lg px-4 py-2 mb-4">
@@ -99,7 +125,7 @@ const TaskColumn = ({ title, color, tasks, onEditClick }) => {
         <div className="flex flex-col items-stretch space-y-6">
           {tasks.length > 0 ? (
             tasks.map((task) => (
-              <TaskCard key={task.id} task={task} onEditClick={onEditClick} />
+              <TaskCard key={task.id} task={task} onEditClick={onEditClick} onDeleteClick={onDeleteClick} onHistoryClick={onHistoryClick} isList={false}/>
             ))
           ) : (
             <p className="text-gray-500 italic">No tasks in this column.</p>
@@ -112,7 +138,10 @@ const TaskColumn = ({ title, color, tasks, onEditClick }) => {
 
 // Main TasksPage Component
 const TasksPage = () => {
+  const [historyModal, setHistoryModal] = useState({ isOpen: false, history: [] });
+
   const { data: session, status } = useSession();
+  const [isList, setIsList] = useState(false);
   const [tasks, setTasks] = useState([]);
   const [view, setView] = useState("Board");
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -215,9 +244,48 @@ const TasksPage = () => {
   };
 
   const handleEditClick = (task) => {
-    console.log('Selected task ID:', task._id); // Access the task ID here
     setSelectedTask(task);
     setIsEditing(true);
+  };
+
+  const handleDeleteTask = async (id) => {
+    try {
+      const response = await fetch(`/api/deleteTask/`, {
+        method: "DELETE",
+        headers: { id }, // Send the ID as a header
+      });
+
+      if (!response.ok) {
+        throw new Error("Failed to delete task");
+      }
+
+      // Remove the deleted task from state
+      setTasks((prevTasks) => prevTasks.filter((task) => task._id !== id));
+    } catch (error) {
+      console.error(error);
+    }
+  };
+
+  const handleHistoryClick = async (taskId) => {
+    try {
+      const response = await fetch(`/api/history`, {
+        method: 'GET',
+        headers: { id: taskId },
+      });
+
+      if (!response.ok) {
+        throw new Error("Failed to fetch task history");
+      }
+
+      const history = await response.json();
+      setHistoryModal({ isOpen: true, history });
+    } catch (error) {
+      console.error(error);
+    }
+  };
+
+  const closeHistoryModal = () => {
+    setHistoryModal({ isOpen: false, history: [] });
   };
 
   const pendingTasks = Array.isArray(tasks)
@@ -230,7 +298,11 @@ const TasksPage = () => {
     ? tasks.filter((task) => task.status === "completed")
     : [];
 
-  if (status === "loading") return <p>Loading...</p>;
+  if (status === "loading") {return (
+    <div className="flex items-center justify-center min-h-screen">
+      <div className="animate-spin rounded-full h-16 w-16 border-t-4 border-blue-500 border-solid"></div>
+    </div>
+  );}
   if (status === "unauthenticated") return <p>You are not logged in.</p>;
 
   return (
@@ -259,17 +331,66 @@ const TasksPage = () => {
       </div>
 
       {view === "Board" ? (
+        
         <div className="grid gap-6 md:grid-cols-3">
-          <TaskColumn title="Pending" color="blue" tasks={pendingTasks} onEditClick={handleEditClick} />
-          <TaskColumn title="In-Progress" color="yellow" tasks={inProgressTasks} onEditClick={handleEditClick} />
-          <TaskColumn title="Completed" color="green" tasks={completedTasks} onEditClick={handleEditClick} />
+          <TaskColumn title="Pending" color="blue" tasks={pendingTasks} onEditClick={handleEditClick} onDeleteClick={handleDeleteTask} onHistoryClick={handleHistoryClick} isList/>
+          <TaskColumn title="In-Progress" color="yellow" tasks={inProgressTasks} onEditClick={handleEditClick} onDeleteClick={handleDeleteTask} onHistoryClick={handleHistoryClick} isList/>
+          <TaskColumn title="Completed" color="green" tasks={completedTasks} onEditClick={handleEditClick} onDeleteClick={handleDeleteTask} onHistoryClick={handleHistoryClick} isList/>
         </div>
       ) : (
         <div>
           {/* List View Logic */}
-          <p>List view is under construction.</p>
+          <div className="space-y-6">
+            
+            {tasks.length > 0 ? (
+              tasks.map((task) => (
+                <TaskCard
+                  isList
+                  key={task._id}
+                  task={task}
+                  onEditClick={handleEditClick}
+                  onDeleteClick={handleDeleteTask}
+                  onHistoryClick={handleHistoryClick}
+                />
+              ))
+            ) : (
+              <p className="text-gray-500 italic">No tasks available.</p>
+            )}
+          </div>
         </div>
       )}
+
+      {/* History Modal */}
+      {historyModal.isOpen && (
+        <div className="fixed inset-0 bg-gray-600 bg-opacity-50 flex justify-center items-center">
+          <div className="bg-white p-6 rounded-lg shadow-lg max-w-md w-full">
+            <h3 className="text-xl font-semibold mb-4">Task History</h3>
+            {historyModal.history.length > 0 ? (
+              <ul>
+                {historyModal.history.map((item, index) => (
+                  <li key={index} className="mb-4">
+                    <p><strong>Title:</strong> {item.title}</p>
+                    <p><strong>Description:</strong> {item.description}</p>
+                    <p><strong>Priority:</strong> {item.priority}</p>
+                    <p><strong>Status:</strong> {item.status}</p>
+                    <p><strong>Updated:</strong> {new Date(item.updatedAt).toLocaleString()}</p>
+                  </li>
+                ))}
+              </ul>
+            ) : (
+              <p className="text-gray-500">No history available.</p>
+            )}
+            <button
+              className="mt-4 bg-blue-500 text-white py-2 px-4 rounded"
+              onClick={closeHistoryModal}
+            >
+              Close
+            </button>
+          </div>
+        </div>
+      )}
+      
+
       {/* Modal for Adding Task */}
        {isModalOpen && (
         <div className="fixed inset-0 bg-gray-600 bg-opacity-50 flex justify-center items-center">

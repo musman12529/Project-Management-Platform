@@ -1,12 +1,9 @@
 export const PUT = async (request: Request) => {
     try {
-      // const urlParts = request.url.split('/');
-      // const id = urlParts.pop(); // Extract the task ID from the URL
-      // const { title, description, dueDate, status, priority } = await request.json(); // Extract updated task details including priority
       const id = request.headers.get('id'); // Use .get() for headers in Next.js 13
     
       const { title, description, dueDate, priority, status } = await request.json();
-      const response = await fetch(`http://localhost:4000/api/tasks/674945c7d5e191d327547f23`, {
+      const response = await fetch(`http://localhost:4000/api/tasks/${id}`, {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
