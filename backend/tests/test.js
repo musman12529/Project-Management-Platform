@@ -2,14 +2,33 @@ const request = require('supertest');
 const mongoose = require('mongoose');
 const app = require('../server'); 
 const Task = require('../models/task');
+const User = require('../models/User'); // Mocked User model
+
+// Hash the password before saving the user in tests
+const bcrypt = require('bcryptjs');
+
+
+
+// Before running tests, clear the database
+beforeEach(async () => {
+  await User.deleteMany({});
+});
+
+afterAll(async () => {
+  await mongoose.connection.close();
+});
+
 
 // Mock Task data
 const mockTask = {
   title: "Test Task",
   description: "This is a test task.",
   dueDate: new Date('2024-12-31'),
-  status: 'pending'
+  status: 'pending',
+  userEmail: "testuser@example.com" // Include this field
 };
+
+
 
 let taskId; // Variable to store the ID of a created task
 
@@ -21,17 +40,112 @@ beforeEach(async () => {
   taskId = task._id;
 });
 
+
+// Tests for User Registration
+describe('POST /api/register', () => {
+  it('should register a new user successfully', async () => {
+    const newUser = {
+      username: 'TestUser',
+      email: 'testuser@example.com',
+      password: 'securepassword',
+    };
+
+    const res = await request(app).post('/api/users/register').send(newUser);
+
+    expect(res.status).toBe(201);
+    expect(res.body.message).toBe('User registered successfully');
+  });
+
+  it('should return 400 if email is already in use', async () => {
+    const existingUser = new User({
+      username: 'ExistingUser',
+      email: 'testuser@example.com',
+      password: await bcrypt.hash('password', 10),
+    });
+    await existingUser.save();
+
+    const newUser = {
+      username: 'TestUser',
+      email: 'testuser@example.com',
+      password: 'securepassword',
+    };
+
+    const res = await request(app).post('/api/users/register').send(newUser);
+
+    expect(res.status).toBe(400);
+    expect(res.body.message).toBe('Email is already in use');
+  });
+});
+
+// Tests for User Login
+describe('POST /api/users/login', () => {
+  it('should log in the user successfully', async () => {
+    const user = new User({
+      username: 'TestUser',
+      email: 'testuser@example.com',
+      password: await bcrypt.hash('securepassword', 10),
+    });
+    await user.save();
+
+    const loginDetails = {
+      email: 'testuser@example.com',
+      password: 'securepassword',
+    };
+
+    const res = await request(app).post('/api/users/login').send(loginDetails);
+
+    expect(res.status).toBe(200);
+    expect(res.body.message).toBe('Login successful');
+  });
+
+  it('should return 400 for invalid credentials', async () => {
+    const user = new User({
+      username: 'TestUser',
+      email: 'testuser@example.com',
+      password: await bcrypt.hash('securepassword', 10),
+    });
+    await user.save();
+
+    const loginDetails = {
+      email: 'testuser@example.com',
+      password: 'wrongpassword',
+    };
+
+    const res = await request(app).post('/api/users/login').send(loginDetails);
+
+    expect(res.status).toBe(400);
+    expect(res.body.message).toBe('Invalid credentials');
+  });
+
+  it('should return 400 if email does not exist', async () => {
+    const loginDetails = {
+      email: 'nonexistentuser@example.com',
+      password: 'securepassword',
+    };
+
+    const res = await request(app).post('/api/users/login').send(loginDetails);
+
+    expect(res.status).toBe(400);
+    expect(res.body.message).toBe('Invalid credentials');
+  });
+});
+
+
 // Test for GET /api/tasks
 describe('GET /api/tasks', () => {
-  it('should return all tasks', async () => {
-    const res = await request(app).get('/api/tasks');
+  it('should return all tasks for a specific user', async () => {
+    const res = await request(app)
+      .get('/api/tasks')
+      .set('user-email', 'testuser@example.com'); // Set user-email header
     expect(res.status).toBe(200);
-    expect(res.body).toHaveLength(1); // Should return 1 task
+    expect(res.body).toHaveLength(1); // Should return 1 task for the user
   });
 
   it('should return a 500 error if the server fails', async () => {
     jest.spyOn(Task, 'find').mockRejectedValueOnce(new Error('Database failure'));
-    const res = await request(app).get('/api/tasks');
+    const res = await request(app)
+      .get('/api/tasks')
+      .set('user-email', 'testuser@example.com'); // Set user-email header
     expect(res.status).toBe(500);
     expect(res.body.message).toBe('Database failure');
   });
@@ -53,22 +167,29 @@ describe('GET /api/tasks/:id', () => {
 });
 
 // Test for POST /api/tasks
+// Test for POST /api/tasks
 describe('POST /api/tasks', () => {
-  it('should create a new task', async () => {
+  it('should create a new task for a specific user', async () => {
     const newTask = {
       title: "New Task",
       description: "This is a new task.",
       dueDate: new Date('2024-12-31'),
       status: 'pending'
     };
-    const res = await request(app).post('/api/tasks').send(newTask);
+    const res = await request(app)
+      .post('/api/tasks')
+      .set('user-email', 'testuser@example.com') // Set user-email header
+      .send(newTask);
     expect(res.status).toBe(201);
     expect(res.body.title).toBe(newTask.title);
   });
 
   it('should return a 400 error if the request body is invalid', async () => {
     const invalidTask = { description: "No title" }; // Missing title
-    const res = await request(app).post('/api/tasks').send(invalidTask);
+    const res = await request(app)
+      .post('/api/tasks')
+      .set('user-email', 'testuser@example.com') // Set user-email header
+      .send(invalidTask);
     expect(res.status).toBe(400);
     expect(res.body.message).toContain('Task validation failed');
   });
@@ -118,22 +239,28 @@ describe('DELETE /api/tasks/:id', () => {
 });
 
 // Test for GET /api/tasks/overdue
+// Test for GET /api/tasks/overdue
 describe('GET /api/tasks/overdue', () => {
-  it('should return overdue tasks', async () => {
+  it('should return overdue tasks for a specific user', async () => {
     const overdueTask = new Task({
       title: "Overdue Task",
       description: "This task is overdue.",
       dueDate: new Date('2023-12-31'), // Overdue date
-      status: 'pending'
+      status: 'pending',
+      userEmail: 'testuser@example.com' // Assign userEmail
     });
     await overdueTask.save();
-    const res = await request(app).get('/api/tasks/overdue');
+    const res = await request(app)
+      .get('/api/tasks/overdue')
+      .set('user-email', 'testuser@example.com'); // Set user-email header
     expect(res.status).toBe(200);
     expect(res.body.length).toBeGreaterThan(0); // Should return the overdue task
   });
 
   it('should return an empty array if no tasks are overdue', async () => {
-    const res = await request(app).get('/api/tasks/overdue');
+    const res = await request(app)
+      .get('/api/tasks/overdue')
+      .set('user-email', 'testuser@example.com'); // Set user-email header
     expect(res.status).toBe(200);
     expect(res.body.length).toBe(0); // Should return an empty array if no tasks are overdue
   });
@@ -148,6 +275,8 @@ describe('GET /api/tasks/history/:id', () => {
       description: "This task has history.",
       dueDate: new Date('2024-12-31'),
       status: 'pending',
+      userEmail: "testuser@example.com", // Add the userEmail field
+
       history: [
         { title: "Initial Task", description: "Initial description", dueDate: new Date('2024-11-30'), status: 'pending' }
       ]
@@ -166,5 +295,8 @@ describe('GET /api/tasks/history/:id', () => {
     expect(res.body.message).toBe('Task not found');
   });
 });
+
+
+
 
 
