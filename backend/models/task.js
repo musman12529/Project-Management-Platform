@@ -20,7 +20,8 @@ const taskSchema = new mongoose.Schema({
     status: { type: String, enum: ['pending', 'in-progress', 'completed'], default: 'pending' },
     updatedAt: { type: Date, default: Date.now }
   }],
-  userEmail: { type: String, required: true }
+  projectId: { type: String, required: true } // Link task to a project
+
 });
 
 const Task = mongoose.model('Task', taskSchema);

@@ -2,6 +2,8 @@ const express = require('express');
 const mongoose = require('mongoose');
 const bodyParser = require('body-parser');
 const userRoutes = require('./routes/userRoutes'); // Import user routes
+const projectRoutes = require('./routes/projectRoutes');
+
 
 const taskRoutes = require('./routes/taskRoutes');
 
@@ -13,6 +15,8 @@ app.use(express.json());
 app.use(bodyParser.json());
 app.use('/api/tasks', taskRoutes);
 app.use('/api/users', userRoutes); // Add user routes
+app.use('/api/projects', projectRoutes); // Add project routes
+
 
 
 // MongoDB connection
