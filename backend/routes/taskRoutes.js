@@ -118,15 +118,24 @@ router.get('/', async (req, res) => {
 });
 
 
-// Delete a specific task by ID
-router.delete('/:id', async (req, res) => {
-  try {
-    const task = await Task.findByIdAndDelete(req.params.id); // Attempt to find and delete the task by ID
-    if (!task) return res.status(404).json({ message: 'Task not found' }); // If no task is found, return 404
+// Remove a teammate by ID
+router.delete('/:teammateId', async (req, res) => {
+  const { teammateId } = req.params;
 
-    res.status(200).json({ message: "Task Deleted" });
+  if (!teammateId) {
+    return res.status(400).json({ message: 'Teammate ID is required' });
+  }
+
+  try {
+    const deletedTeammate = await Teammate.findByIdAndDelete(teammateId);
+
+    if (!deletedTeammate) {
+      return res.status(404).json({ message: 'Teammate not found' });
+    }
+
+    res.status(200).json({ message: 'Teammate removed successfully', deletedTeammate });
   } catch (err) {
-    res.status(400).json({ message: err.message }); // Handle any errors that occur
+    res.status(500).json({ message: err.message });
   }
 });
 

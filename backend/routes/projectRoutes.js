@@ -2,10 +2,9 @@ const express = require('express');
 const Project = require('../models/project');
 const router = express.Router();
 
-// Create a new project
 router.post('/', async (req, res) => {
-    const { projectName, status, dueDate } = req.body;
-    const userEmail = req.headers['user-email']; // Get user email from the request headers
+    const { projectName, status, dueDate, assignedTo } = req.body;
+    const userEmail = req.headers['user-email'];
   
     if (!userEmail) {
       return res.status(400).json({ message: 'User email is required to create a project' });
@@ -16,7 +15,9 @@ router.post('/', async (req, res) => {
         projectName,
         status,
         dueDate,
-        userEmail // Assign the user email
+        userEmail,
+        assignedTo: Array.isArray(assignedTo) ? assignedTo : assignedTo ? [assignedTo] : [], // Normalize to array
+
       });
   
       await project.save();
@@ -26,16 +27,21 @@ router.post('/', async (req, res) => {
     }
   });
   
-// Retrieve all projects for a specific user
-router.get('/', async (req, res) => {
-    const userEmail = req.headers['user-email']; // Get user email from the request headers
+  
+  router.get('/', async (req, res) => {
+    const userEmail = req.headers['user-email'];
   
     if (!userEmail) {
       return res.status(400).json({ message: 'User email is required' });
     }
   
     try {
-      const projects = await Project.find({ userEmail })
+      const projects = await Project.find({
+        $or: [
+          { userEmail },
+          { assignedTo: userEmail },
+        ],
+      });
       res.status(200).json(projects);
     } catch (err) {
       res.status(500).json({ message: err.message });
