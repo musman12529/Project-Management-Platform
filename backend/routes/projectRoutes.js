@@ -103,6 +103,52 @@ router.delete('/:id', async (req, res) => {
       res.status(400).json({ message: err.message });
     }
   });
-  
+
+
+  // Add a teammate to the assignedTo list of an existing project
+router.put('/:id/add-teammate', async (req, res) => {
+    const { teammateEmail } = req.body; // Get the teammate email(s) from the request body
+    
+
+    if (!teammateEmail) {
+      return res.status(400).json({ message: 'Teammate email is required' });
+    }
+
+    try {
+      // Find the project by its ID
+      const project = await Project.findOne({ _id: req.params.id });
+
+      if (!project) {
+        return res.status(404).json({ message: 'Project not found' });
+      }
+
+      // Normalize teammateEmail to an array
+      let teammates = Array.isArray(teammateEmail) ? teammateEmail : [teammateEmail];
+
+      // Ensure all teammates are unique
+      teammates = [...new Set(teammates)];
+
+      // Normalize assignedTo to an array (if it's a single string, convert to array)
+      project.assignedTo = Array.isArray(project.assignedTo) ? project.assignedTo : [project.assignedTo];
+
+      // Check if any of the teammates are already in the assignedTo list
+      for (let email of teammates) {
+        if (project.assignedTo.includes(email)) {
+          return res.status(400).json({ message: `Teammate ${email} is already assigned to this project` });
+        }
+      }
+
+      // Add new teammates to the assignedTo list
+      project.assignedTo.push(...teammates);
+
+      // Save the updated project
+      await project.save();
+
+      res.status(200).json({ message: 'Teammates added successfully', project });
+    } catch (err) {
+      res.status(500).json({ message: err.message });
+    }
+});
+
 
 module.exports = router;

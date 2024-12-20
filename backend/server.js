@@ -4,9 +4,6 @@ const bodyParser = require('body-parser');
 const userRoutes = require('./routes/userRoutes'); // Import user routes
 const projectRoutes = require('./routes/projectRoutes');
 const teammateRoutes = require('./routes/teamsRoutes');
-
-
-
 const taskRoutes = require('./routes/taskRoutes');
 
 const app = express();
