@@ -82,6 +82,15 @@ const SlidingMenu = () => {
               
             </div>
             <div className="w-full h-auto flex items-center gap-x-4 text-gray-200 hover:text-gray-100 hover:bg-blue-500 rounded-md px-4 py-3 ease-out duration-500 cursor-pointer">
+            <Link href="/myTeam
+">
+              <h1 className="text-base font-medium">My Team
+              </h1>
+              </Link>
+
+              
+            </div>
+            <div className="w-full h-auto flex items-center gap-x-4 text-gray-200 hover:text-gray-100 hover:bg-blue-500 rounded-md px-4 py-3 ease-out duration-500 cursor-pointer">
             <Link href="/overdueTask
 ">
               <h1 className="text-base font-medium">Overdue Tasks
