@@ -9,7 +9,6 @@ const TeamsPage = () => {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [teammateEmail, setTeammateEmail] = useState("");
 
-  // Fetch teammates on component load
   useEffect(() => {
     const fetchTeammates = async () => {
       try {
@@ -28,7 +27,6 @@ const TeamsPage = () => {
 
         const teammatesData = await response.json();
 
-        // Fetch usernames for teammates
         const teammatesWithUsernames = await Promise.all(
           teammatesData.map(async (teammate) => {
             try {
@@ -46,11 +44,11 @@ const TeamsPage = () => {
               const usernameData = await usernameResponse.json();
               return {
                 ...teammate,
-                username: usernameData.username, // Add username to the teammate object
+                username: usernameData.username,
               };
             } catch (error) {
               console.error("Error fetching username:", error);
-              return { ...teammate, username: "Unknown" }; // Fallback for failed username fetch
+              return { ...teammate, username: "Unknown" };
             }
           })
         );
@@ -64,7 +62,6 @@ const TeamsPage = () => {
     fetchTeammates();
   }, []);
 
-  // Add a new teammate
   const handleAddTeammate = async () => {
     try {
       const userEmail = localStorage.getItem("email");
@@ -86,23 +83,20 @@ const TeamsPage = () => {
       setIsModalOpen(false);
       setTeammateEmail("");
     } catch (error) {
-      alert(error.message); // Display error message to the user
+      alert(error.message);
       console.error("Error adding teammate:", error);
     }
   };
 
-  // Delete a teammate
-  const handleDeleteTeammate = async (teammateEmail: string) => {
+  const handleDeleteTeammate = async (teammateEmail) => {
     try {
       const userEmail = localStorage.getItem("email");
-
-      // Send the DELETE request to the API
-      const response = await fetch(`/api/deleteTeammate`, {
+      const response = await fetch("/api/deleteTeammate", {
         method: "DELETE",
         headers: {
           "Content-Type": "application/json",
-          "user-email": userEmail!,
-          "teammate-email": teammateEmail, // Pass teammate email as header
+          "user-email": userEmail,
+          "teammate-email": teammateEmail,
         },
       });
 
@@ -110,19 +104,17 @@ const TeamsPage = () => {
         throw new Error("Failed to delete teammate");
       }
 
-      // If the delete is successful, remove the teammate from state
       setTeammates((prevTeammates) =>
         prevTeammates.filter((teammate) => teammate.teammateEmail !== teammateEmail)
       );
     } catch (error) {
-      alert(error.message); // Display error message to the user
+      alert(error.message);
       console.error("Error deleting teammate:", error);
     }
   };
 
   return (
     <div className="p-6">
-      {/* Header Section */}
       <div className="flex justify-between items-center mb-4">
         <h1 className="text-3xl font-bold text-blue-500">Team Members</h1>
         <button
@@ -133,38 +125,40 @@ const TeamsPage = () => {
         </button>
       </div>
 
-      {/* Teammates List */}
-      <div className="mt-6">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 mt-6">
         {teammates.length > 0 ? (
-          <ul className="space-y-2">
-            {teammates.map((teammate, index) => (
-              <li
-                key={index}
-                className="p-4 border border-gray-300 rounded shadow-md flex justify-between items-center"
-              >
-                <div>
-                  <p>
-                    <strong>Email:</strong> {teammate.teammateEmail}
-                  </p>
-                  <p>
-                    <strong>Username:</strong> {teammate.username}
-                  </p>
-                </div>
+          teammates.map((teammate, index) => (
+            <div
+              key={index}
+              className="bg-white border border-gray-300 rounded shadow-lg p-4"
+            >
+              <div className="border-b border-gray-200 pb-2 mb-4">
+                <h2 className="text-lg font-semibold text-gray-700">{teammate.username}</h2>
+                <p className="text-sm text-gray-500">{teammate.teammateEmail}</p>
+              </div>
+              <div>
+                <p className="text-sm">
+                  <strong>Role:</strong> {teammate.role || "Member"}
+                </p>
+                <p className="text-sm">
+                  <strong>Status:</strong> {teammate.status || "Active"}
+                </p>
+              </div>
+              <div className="mt-4 flex justify-end">
                 <button
                   onClick={() => handleDeleteTeammate(teammate.teammateEmail)}
-                  className="px-4 py-2 bg-red-500 text-white rounded hover:bg-red-600"
+                  className="px-3 py-2 bg-red-500 text-white rounded hover:bg-red-600 text-sm"
                 >
                   Delete
                 </button>
-              </li>
-            ))}
-          </ul>
+              </div>
+            </div>
+          ))
         ) : (
           <p className="text-gray-500 italic">No teammates added yet.</p>
         )}
       </div>
 
-      {/* Modal for Adding Teammate */}
       {isModalOpen && (
         <div className="fixed inset-0 bg-gray-800 bg-opacity-50 flex items-center justify-center">
           <div className="bg-white p-6 rounded shadow-lg w-96">
