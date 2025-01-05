@@ -106,7 +106,7 @@ router.delete('/:id', async (req, res) => {
 
 
   // Add a teammate to the assignedTo list of an existing project
-router.put('/:id/add-teammate', async (req, res) => {
+router.put('/:id/addTeammate', async (req, res) => {
     const { teammateEmail } = req.body; // Get the teammate email(s) from the request body
     
 
