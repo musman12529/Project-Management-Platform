@@ -73,14 +73,15 @@ const SlidingMenu = () => {
           <div className="w-full h-auto flex flex-col gap-y-1 mt-6">
             {/* Repeat for each menu item */}
             <div className="w-full h-auto flex items-center gap-x-4 text-gray-200 hover:text-gray-100 hover:bg-blue-500 rounded-md px-4 py-3 ease-out duration-500 cursor-pointer">
-            <Link href="/MyTasks
+            <Link href="/
 ">
-              <h1 className="text-base font-medium">My Tasks
+              <h1 className="text-base font-medium">Home
               </h1>
               </Link>
 
               
             </div>
+            
             <div className="w-full h-auto flex items-center gap-x-4 text-gray-200 hover:text-gray-100 hover:bg-blue-500 rounded-md px-4 py-3 ease-out duration-500 cursor-pointer">
             <Link href="/myProjects
 ">
@@ -100,14 +101,15 @@ const SlidingMenu = () => {
               
             </div>
             <div className="w-full h-auto flex items-center gap-x-4 text-gray-200 hover:text-gray-100 hover:bg-blue-500 rounded-md px-4 py-3 ease-out duration-500 cursor-pointer">
-            <Link href="/overdueTask
+            <Link href="/completedProject
 ">
-              <h1 className="text-base font-medium">Overdue Tasks
+              <h1 className="text-base font-medium">Completed Projects
               </h1>
               </Link>
 
               
             </div>
+            
             
           </div>
 

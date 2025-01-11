@@ -3,9 +3,9 @@
 
 export const GET = async (request: Request) => {
   try {
-    const userEmail = request.headers.get('user-email'); // Use .get() for headers in Next.js 13
-    if (!userEmail) {
-      return new Response(JSON.stringify({ message: 'User email is required' }), {
+    const projectId = request.headers.get('project-id'); // Use .get() for headers in Next.js 13
+    if (!projectId) {
+      return new Response(JSON.stringify({ message: 'Project ID is required' }), {
         status: 400,
       });
     }
@@ -14,7 +14,7 @@ export const GET = async (request: Request) => {
     const response = await fetch('http://localhost:4000/api/tasks/', {
       method: 'GET',
       headers: {
-        'user-email': userEmail,
+        'project-id': projectId,
       },
     });
 

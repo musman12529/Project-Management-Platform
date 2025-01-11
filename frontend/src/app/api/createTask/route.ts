@@ -1,8 +1,8 @@
 export const POST = async (request: Request) => {
     try {
       const { title, description, dueDate, priority } = await request.json(); // Extract task details including priority
-      const userEmail = request.headers.get('user-email');
-      if (!userEmail) {
+      const projectId = request.headers.get('project-id'); // Use .get() for headers in Next.js 13
+      if (!projectId) {
         return new Response(JSON.stringify({ message: 'User email is required' }), {
           status: 400,
         });
@@ -13,7 +13,7 @@ export const POST = async (request: Request) => {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          'user-email': userEmail,
+          'project-id': projectId,
         },
         body: JSON.stringify({ title, description, dueDate, priority }), // Include priority in the request body
       });

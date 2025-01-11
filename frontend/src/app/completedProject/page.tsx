@@ -376,27 +376,23 @@ const ProjectCard = ({ project, onEditClick, onDeleteClick, onAddTeammatesClick 
     <div className="container mx-auto p-4">
   {/* Title and Add New Project Button on the same line */}
   <div className="flex items-center justify-between mb-4">
-    <h1 className="text-4xl font-bold text-blue-500">Projects</h1>
-    <button
-      className="bg-blue-500 text-white px-4 py-2 rounded-md"
-      onClick={openAddModal}
-    >
-      Add New Project
-    </button>
+    <h1 className="text-4xl font-bold text-blue-500">Completed Projects</h1>
+    
   </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-        {projects.map((project) => (
-          <ProjectCard
-            key={project._id}
-            project={project}
-            onEditClick={openEditModal}
-            onDeleteClick={handleDeleteProject}
-            onAddTeammatesClick={handleTeammatesModalOpen} // Pass the function here
-
-          />
-        ))}
-      </div>
+  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+  {projects.map((project) =>
+    project.status === "Completed" ? (
+      <ProjectCard
+        key={project._id}
+        project={project}
+        onEditClick={openEditModal}
+        onDeleteClick={handleDeleteProject}
+        onAddTeammatesClick={handleTeammatesModalOpen} // Pass the function here
+      />
+    ) : null
+  )}
+</div>
       
       
 

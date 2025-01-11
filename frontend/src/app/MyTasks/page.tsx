@@ -2,6 +2,10 @@
 
 import { useEffect, useState } from "react";
 import { useSession } from "next-auth/react";
+import { useRouter } from 'next/router';
+import { useSearchParams } from 'next/navigation';
+
+
 
 // TaskCard Component
 const TaskCard = ({ task, onEditClick, onDeleteClick, onHistoryClick, isList  }) => {
@@ -138,6 +142,9 @@ const TaskColumn = ({ title, color, tasks, onEditClick, onDeleteClick, onHistory
 
 // Main TasksPage Component
 const TasksPage = () => {
+  const searchParams = useSearchParams();
+    const id = searchParams.get('id'); // Get the 'id' parameter
+  
   const [historyModal, setHistoryModal] = useState({ isOpen: false, history: [] });
 
   const { data: session, status } = useSession();
@@ -158,11 +165,12 @@ const TasksPage = () => {
   useEffect(() => {
     const fetchTasks = async () => {
       try {
-        const userEmail = localStorage.getItem("email");
+        
+
         const response = await fetch("/api/tasks", {
           method: "GET",
           headers: {
-            "user-email": userEmail,
+            "project-id": id,
             "Content-Type": "application/json",
           },
         });
@@ -183,12 +191,12 @@ const TasksPage = () => {
 
   const handleAddTask = async () => {
     try {
-      const userEmail = localStorage.getItem("email");
+      
       const response = await fetch("/api/createTask", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
-          "user-email": userEmail,
+          "project-id": id,
         },
         body: JSON.stringify(newTask),
       });
