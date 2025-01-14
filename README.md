@@ -1,12 +1,11 @@
 # Project README
 
 ## Overview
-The **Project Collaboration Tool** is a comprehensive platform designed for seamless team coordination and task management. It integrates real-time communication features, allowing team members to efficiently manage and collaborate on projects. The tool includes task tracking, project notes, and AI-generated insights for optimal project outcomes.
+The **Project Collaboration Tool** is a comprehensive platform designed for seamless team coordination and task management. It integrates real-time communication features, allowing team members to efficiently manage and collaborate on projects. The tool includes project management, task tracking, and AI-generated insights for optimal project outcomes.
 
 - **Real-Time Communication**: Using Socket.IO, the application enables instant communication, allowing team members to hold project-based meetings in real-time.
 - **AI Integration**: Integrated Gemini AI API to generate actionable insights and task suggestions from project meeting notes.
 - **Backend APIs**: 20+ REST APIs built with Node.js, Express.js, and MongoDB for efficient frontend-backend communication.
-- **Testing**: Unit and integration testing done with Jest. API testing conducted with Postman.
 
 
 ## Video Demonstration
