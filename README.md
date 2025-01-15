@@ -8,11 +8,13 @@ The **Project Collaboration Tool** is a comprehensive platform designed for seam
 - **Backend APIs**: 20+ REST APIs built with Node.js, Express.js, and MongoDB for efficient frontend-backend communication.
 
 
+<!--
 ## Video Demonstration
 This video demonstrates the successful implementation of the Task Tracker app. You can click on the thumbnail or directly access the video from this Google Drive link:
 https://drive.google.com/file/d/1-zc2tc18mOBjRqcWqIgOQd2-lxm6BKFD/view?usp=sharing
 
 [![Task Tracker Video](./frontend/public/taskthumbnail.png)](https://drive.google.com/file/d/1-zc2tc18mOBjRqcWqIgOQd2-lxm6BKFD/view?usp=sharing)
+-->
 
 ## Repo Layout
 
