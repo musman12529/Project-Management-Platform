@@ -1,4 +1,4 @@
-# Project README
+# Project Readme
 
 ## Overview
 The **Project Collaboration Tool** is a comprehensive platform designed for seamless team coordination and task management. It integrates real-time communication features, allowing team members to efficiently manage and collaborate on projects. The tool includes project management, task tracking, and AI-generated insights for optimal project outcomes.
