@@ -1,4 +1,5 @@
 "use client";
+import Link from 'next/link';
 
 import { useEffect, useState } from "react";
 import { useSession } from "next-auth/react";
@@ -330,12 +331,19 @@ const TasksPage = () => {
             List View
           </button>
         </div>
-        <button
-          className="bg-blue-500 text-white py-2 px-4 rounded-lg"
-          onClick={() => setIsModalOpen(true)}
-        >
-          + Create Task
-        </button>
+        <div className="flex items-center space-x-2">
+          <Link href={`/teamChat?id=${id}`}>
+            <button className="bg-blue-500 text-white py-2 px-4 rounded-lg">
+              Start Meeting
+            </button>
+          </Link>
+          <button
+            className="bg-blue-500 text-white py-2 px-3 rounded-lg"
+            onClick={() => setIsModalOpen(true)}
+          >
+            + Create Task
+          </button>
+        </div>
       </div>
 
       {view === "Board" ? (

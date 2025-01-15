@@ -12,7 +12,7 @@ const Login = () => {
 
   useEffect(() => {
     if (sessionStatus === "authenticated") {
-      router.replace("/MyTasks");
+      router.replace("/");
     }
   }, [sessionStatus, router]);
 
@@ -53,7 +53,7 @@ const Login = () => {
       setError("");
       setLoading(false); // Reset loading
       if (res?.url) {
-        router.replace("/MyTasks");
+        router.replace("/");
       }
     }
   };
