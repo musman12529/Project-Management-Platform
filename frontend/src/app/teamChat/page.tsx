@@ -1,4 +1,6 @@
+
 "use client";
+
 import { useEffect, useState, useRef } from "react";
 import { Chat, Inputs, SignUp } from "@/components";
 import { io } from "socket.io-client";
@@ -10,10 +12,10 @@ export default function TeamChat() {
   const [chat, setChat] = useState([]);
   const [typing, setTyping] = useState([]);
   const [input, setInput] = useState("");
-  const [tasks, setTasks] = useState([]); // Store tasks
-  const [analysisResult, setAnalysisResult] = useState(null); // Store insights
-  const [isModalOpen, setIsModalOpen] = useState(false); // Toggle modal
-  const [loading, setLoading] = useState(false); // Loading state
+  const [tasks, setTasks] = useState([]);
+  const [analysisResult, setAnalysisResult] = useState(null);
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [loading, setLoading] = useState(false);
   const user = useRef(null);
 
   const searchParams = useSearchParams();
@@ -24,7 +26,6 @@ export default function TeamChat() {
   const genAI = new GoogleGenerativeAI("AIzaSyC4Gaf5lLcHrpTacOol8xnD4JcRSInQEYM");
   const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
 
-  // Fetch tasks
   useEffect(() => {
     const fetchTasks = async () => {
       try {
@@ -48,7 +49,6 @@ export default function TeamChat() {
     fetchTasks();
   }, [roomId]);
 
-  // Socket setup
   useEffect(() => {
     if (!roomId) return;
 
@@ -100,7 +100,7 @@ export default function TeamChat() {
     try {
       const result = await model.generateContent(combinedInput);
       const response = await result.response;
-      setAnalysisResult(response.text()); // Store API response
+      setAnalysisResult(response.text());
       setIsModalOpen(true);
     } catch (error) {
       console.error("Error analyzing meeting notes:", error);
@@ -136,12 +136,6 @@ export default function TeamChat() {
             setInput={setInput}
             roomId={roomId}
           />
-          <button
-            className="bg-blue-500 text-white px-4 py-2 mt-4 rounded-md hover:bg-blue-600 transition"
-            onClick={analyzeMeetingNotes}
-          >
-            Analyze Meeting Notes
-          </button>
         </div>
       ) : (
         <div className="flex flex-grow items-center justify-center">
@@ -185,9 +179,15 @@ export default function TeamChat() {
           </div>
         </div>
       )}
+
+      {/* Floating Analyze Button */}
+      <div
+        className="fixed bottom-4 right-4 flex items-center justify-center cursor-pointer rounded-full bg-blue-500 w-28 h-28 shadow-lg hover:shadow-2xl transition"
+        onClick={analyzeMeetingNotes}
+        title="Analyze Meeting Notes"
+      >
+        <img src="/chatbot.png" alt="Analyze Meeting Notes" className="w-17 h-16" />
+      </div>
     </main>
   );
 }
-
-
-

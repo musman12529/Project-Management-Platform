@@ -134,6 +134,7 @@ const ProjectCard = ({ project, onEditClick, onDeleteClick, onAddTeammatesClick 
   
 
   const ProjectsPage = () => {
+    const { status } = useSession();
     const [projects, setProjects] = useState([]);
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [isEditMode, setIsEditMode] = useState(false);
@@ -371,6 +372,7 @@ const ProjectCard = ({ project, onEditClick, onDeleteClick, onAddTeammatesClick 
     fetchTeammates();
     setIsTeammatesModalOpen(true);
   };
+  if (status === "unauthenticated") return <p>You are not logged in.</p>;
 
   return (
     <div className="container mx-auto p-4">

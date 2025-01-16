@@ -9,6 +9,9 @@ const Login = () => {
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false); // Loading state
   const { data: session, status: sessionStatus } = useSession();
+  const [email, setEmail] = useState("testing@gmail.com");
+  const [password, setPassword] = useState("testing@gmail.com");
+  const [showNotification, setShowNotification] = useState(true);
 
   useEffect(() => {
     if (sessionStatus === "authenticated") {
@@ -16,16 +19,22 @@ const Login = () => {
     }
   }, [sessionStatus, router]);
 
-  const isValidEmail = (email: string) => {
+  // Auto-dismiss notification after 5 seconds
+  useEffect(() => {
+    if (showNotification) {
+      const timer = setTimeout(() => setShowNotification(false), 5000);
+      return () => clearTimeout(timer); // Cleanup on component unmount or re-render
+    }
+  }, [showNotification]);
+
+  const isValidEmail = (email) => {
     const emailRegex = /^[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}$/i;
     return emailRegex.test(email);
   };
 
-  const handleSubmit = async (e: any) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
     setLoading(true); // Set loading to true
-    const email = e.target[0].value;
-    const password = e.target[1].value;
 
     if (!isValidEmail(email)) {
       setError("Email is invalid");
@@ -70,19 +79,30 @@ const Login = () => {
   return (
     sessionStatus !== "authenticated" && (
       <div className="flex min-h-screen flex-col items-center justify-between p-24">
+        {showNotification && (
+          <div className="fixed top-4 bg-green-500 text-white px-4 py-2 rounded shadow-md">
+            Sample credentials are already entered.
+          </div>
+        )}
         <div className="bg-[#212121] p-8 rounded shadow-md w-96">
-          <h1 className="text-4xl text-center font-semibold mb-8 text-white ">Login</h1>
+          <h1 className="text-4xl text-center font-semibold mb-8 text-white">
+            Login
+          </h1>
           <form onSubmit={handleSubmit}>
             <input
               type="text"
               className="w-full border border-gray-300 text-black rounded px-3 py-2 mb-4 focus:outline-none focus:border-blue-400 focus:text-black"
               placeholder="Email"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
               required
             />
             <input
               type="password"
               className="w-full border border-gray-300 text-black rounded px-3 py-2 mb-4 focus:outline-none focus:border-blue-400 focus:text-black"
               placeholder="Password"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
               required
             />
             <button

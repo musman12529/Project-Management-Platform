@@ -4,6 +4,8 @@ import { useEffect, useState } from "react";
 import { useSession } from "next-auth/react";
 
 const TeamsPage = () => {
+  const { status } = useSession();
+
   const { data: session } = useSession();
   const [teammates, setTeammates] = useState([]);
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -112,6 +114,8 @@ const TeamsPage = () => {
       console.error("Error deleting teammate:", error);
     }
   };
+  if (status === "unauthenticated") return <p>You are not logged in.</p>;
+
 
   return (
     <div className="p-6">
