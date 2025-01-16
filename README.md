@@ -1,5 +1,11 @@
 # Project Readme
 
+## Video Demonstration
+This video demonstrates the successful implementation of the Project Collaboration Tool.
+
+https://github.com/user-attachments/assets/1185f046-cf89-40fd-99b6-25f89eccb8a7
+
+
 ## Overview
 The **Project Collaboration Tool** is a comprehensive platform designed for seamless team coordination and task management. It integrates real-time communication features, allowing team members to efficiently manage and collaborate on projects. The tool includes project management, task tracking, and AI-generated insights for optimal project outcomes.
 
@@ -7,14 +13,6 @@ The **Project Collaboration Tool** is a comprehensive platform designed for seam
 - **AI Integration**: Integrated Gemini AI API to generate actionable insights and task suggestions from project meeting notes.
 - **Backend APIs**: 20+ REST APIs built with Node.js, Express.js, and MongoDB for efficient frontend-backend communication.
 
-
-<!--
-## Video Demonstration
-This video demonstrates the successful implementation of the Task Tracker app. You can click on the thumbnail or directly access the video from this Google Drive link:
-https://drive.google.com/file/d/1-zc2tc18mOBjRqcWqIgOQd2-lxm6BKFD/view?usp=sharing
-
-[![Task Tracker Video](./frontend/public/taskthumbnail.png)](https://drive.google.com/file/d/1-zc2tc18mOBjRqcWqIgOQd2-lxm6BKFD/view?usp=sharing)
--->
 
 ## Repo Layout
 
