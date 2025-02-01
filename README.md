@@ -2,7 +2,7 @@
 
 ## View the Website
 
-You can view the live version of the Project Collaboration Tool here: https://pcl-frontend-zeta.vercel.app/ {:target="_blank"}
+You can view the live version of the Project Collaboration Tool here: (https://pcl-frontend-zeta.vercel.app/) {:target="_blank"}
 
 
 
