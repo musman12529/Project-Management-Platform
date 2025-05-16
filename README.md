@@ -2,18 +2,18 @@
 
 ## View the Website
 
-You can view the live version of the Project Collaboration Tool here: https://pcl-frontend-zeta.vercel.app/
+You can view the live version of the Project Management Platform here: https://pcl-frontend-zeta.vercel.app/
 
 
 
 ## Video Demonstration
-This video demonstrates the successful implementation of the Project Collaboration Tool.
+This video demonstrates the successful implementation of the Project Management Platform.
 
 https://github.com/user-attachments/assets/1185f046-cf89-40fd-99b6-25f89eccb8a7
 
 
 ## Overview
-The **Project Collaboration Tool** is a comprehensive platform designed for seamless team coordination and task management. It integrates real-time communication features, allowing team members to efficiently manage and collaborate on projects. The tool includes project management, task tracking, and AI-generated insights for optimal project outcomes.
+The **Project Management Platform** is a comprehensive platform designed for seamless team coordination and task management. It integrates real-time communication features, allowing team members to efficiently manage and collaborate on projects. The tool includes project management, task tracking, and AI-generated insights for optimal project outcomes.
 
 - **Real-Time Communication**: Using Socket.IO, the application enables instant communication, allowing team members to hold project-based meetings in real-time.
 - **AI Integration**: Integrated Gemini AI API to generate actionable insights and task suggestions from project meeting notes.
