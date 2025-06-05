@@ -6,11 +6,6 @@ You can view the live version of the Project Management Platform here: https://p
 
 
 
-## Video Demonstration
-This video demonstrates the successful implementation of the Project Management Platform.
-
-https://github.com/user-attachments/assets/1185f046-cf89-40fd-99b6-25f89eccb8a7
-
 
 ## Overview
 The **Project Management Platform** is a comprehensive platform designed for seamless team coordination and task management. It integrates real-time communication features, allowing team members to efficiently manage and collaborate on projects. The tool includes project management, task tracking, and AI-generated insights for optimal project outcomes.
